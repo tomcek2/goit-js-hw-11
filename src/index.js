@@ -4,40 +4,44 @@ const searchInput = document.querySelector('input[name="searchQuery"]');
 const searchButton = document.querySelector('.button-submit');
 const gallery = document.querySelector('.gallery');
 
-async function searchPhoto(e) {
-  e.preventDefault();
-  const query = searchInput.value;
-  if (query) {
-    try {
-      const response = await axios.get('https://pixabay.com/api/', {
-        params: {
-          key: '39394747-fa1f159daeb12a76c3032126a',
-          q: query,
-          image_type: 'photo',
-          orientation: 'horizontal',
-          safesearch: 'true',
-        },
-      });
-      const data = response.data;
+let currentPage = 1;
+const perPage = 40; // Ilość zdjęć do pobrania na stronę
+let totalHits = 0;
+
+async function photoFetch(query, page) {
+  try {
+    const response = await axios.get('https://pixabay.com/api/', {
+      params: {
+        key: '39394747-fa1f159daeb12a76c3032126a',
+        q: query,
+        image_type: 'photo',
+        orientation: 'horizontal',
+        safesearch: 'true',
+        page: page,
+        per_page: perPage,
+      },
+    });
+
+    const data = response.data;
+    totalHits = data.totalHits;
+
+    if (data.hits.length === 0) {
+      alert('No results found.');
+    } else {
       displayImages(data.hits);
-    } catch (error) {
-      console.log('Błąd podczas pobierania danych:', error);
     }
-  } else {
-    alert('Proszę wpisać frazę do wyszukiwania.');
+  } catch (error) {
+    console.log('Błąd podczas pobierania danych:', error);
   }
 }
 
-searchButton.addEventListener('click', searchPhoto);
-
-//  Funkcja do tworzenie elemnetów strony  //
-const createElement = ({
+function createElement({
   type = 'div',
   classList = [],
   text = '',
   content = [],
   attributes = {},
-}) => {
+}) {
   const el = document.createElement(type);
   el.classList.add(...classList);
   if (text) {
@@ -50,13 +54,10 @@ const createElement = ({
     el.setAttribute(key, value);
   });
   return el;
-};
+}
 
 function displayImages(images) {
-  gallery.innerHTML = ''; // Czyszczenie galerii przed dodaniem nowych obrazków
-
   images.forEach(image => {
-    // Tworzenie elementu karty obrazka
     const photoCard = createElement({
       type: 'div',
       classList: ['photo-card'],
@@ -122,7 +123,40 @@ function displayImages(images) {
       ],
     });
 
-    // Dodawanie karty do galerii
-    gallery.append(photoCard);
+    gallery.appendChild(photoCard);
   });
 }
+
+function infiniteScroll() {
+  const scrollY = window.scrollY;
+  const windowHeight = window.innerHeight;
+  const bodyHeight = document.body.offsetHeight;
+  const offset = 200; // Próg od końca strony do wczytania nowych zdjęć
+
+  if (
+    scrollY + windowHeight >= bodyHeight - offset &&
+    gallery.children.length < totalHits
+  ) {
+    currentPage++;
+    photoFetch(searchInput.value, currentPage);
+  } else if (gallery.children.length >= totalHits) {
+    infoText.textContent =
+      "We're sorry, but you've reached the end of search results.";
+  }
+}
+function photoSearch(e) {
+  e.preventDefault();
+  currentPage = 1; // Zresetuj stronę do pierwszej przy nowym wyszukiwaniu
+  gallery.innerHTML = ''; // Wyczyść galerię przed nowymi wynikami
+  const query = searchInput.value;
+  if (query) {
+    photoFetch(query, currentPage);
+  } else {
+    alert('Proszę wpisać frazę do wyszukiwania.');
+  }
+}
+
+searchButton.addEventListener('click', photoSearch);
+
+// Obsługa Infinite Scroll
+window.addEventListener('scroll', infiniteScroll);
