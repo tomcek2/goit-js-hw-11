@@ -1,4 +1,6 @@
 import axios from 'axios';
+import SimpleLightbox from 'simplelightbox'; // Zaimportuj bibliotekę SimpleLightbox
+import 'simplelightbox/dist/simple-lightbox.min.css'; // Zaimportuj styl CSS dla SimpleLightbox
 
 const searchInput = document.querySelector('input[name="searchQuery"]');
 const searchButton = document.querySelector('.button-submit');
@@ -7,6 +9,7 @@ const gallery = document.querySelector('.gallery');
 let currentPage = 1;
 const perPage = 40; // Ilość zdjęć do pobrania na stronę
 let totalHits = 0;
+let lightbox; // Zmienna przechowująca instancję SimpleLightbox
 
 async function photoFetch(query, page) {
   try {
@@ -26,12 +29,22 @@ async function photoFetch(query, page) {
     totalHits = data.totalHits;
 
     if (data.hits.length === 0) {
-      alert('No results found.');
+      alert(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
     } else {
+      alert(`Hooray! We found ${totalHits} images.`);
       displayImages(data.hits);
+
+      // Inicjalizuj SimpleLightbox po dodaniu nowych zdjęć do galerii
+      if (!lightbox) {
+        lightbox = new SimpleLightbox('.gallery a', {
+          /* opcje konfiguracyjne */
+        });
+      }
     }
   } catch (error) {
-    console.log('Błąd podczas pobierania danych:', error);
+    console.log(error);
   }
 }
 
@@ -63,12 +76,20 @@ function displayImages(images) {
       classList: ['photo-card'],
       content: [
         createElement({
-          type: 'img',
+          type: 'a',
           attributes: {
-            src: image.webformatURL,
-            alt: image.tags,
-            loading: 'lazy',
+            href: image.largeImageURL, // Ustaw href na duży obrazek
           },
+          content: [
+            createElement({
+              type: 'img',
+              attributes: {
+                src: image.webformatURL,
+                alt: image.tags,
+                loading: 'lazy',
+              },
+            }),
+          ],
         }),
         createElement({
           type: 'div',
@@ -82,39 +103,6 @@ function displayImages(images) {
                 createElement({
                   type: 'b',
                   text: 'Likes:',
-                }),
-              ],
-            }),
-            createElement({
-              type: 'p',
-              classList: ['info-item'],
-              text: image.views,
-              content: [
-                createElement({
-                  type: 'b',
-                  text: 'Views:',
-                }),
-              ],
-            }),
-            createElement({
-              type: 'p',
-              classList: ['info-item'],
-              text: image.comments,
-              content: [
-                createElement({
-                  type: 'b',
-                  text: 'Comments:',
-                }),
-              ],
-            }),
-            createElement({
-              type: 'p',
-              classList: ['info-item'],
-              text: image.downloads,
-              content: [
-                createElement({
-                  type: 'b',
-                  text: 'Downloads:',
                 }),
               ],
             }),

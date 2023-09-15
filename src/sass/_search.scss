@@ -1,3 +1,41 @@
+* {
+  box-sizing: border-box;
+}
+
 .serch-area {
-  background-color: blue;
+  background-color: #1064cd;
+}
+
+/* Style the search field */
+input[name='searchQuery'] {
+  padding: 10px;
+  font-size: 17px;
+  border: 1px solid grey;
+  float: left;
+  width: 80%;
+  background: #f1f1f1;
+}
+
+/* Style the submit button */
+.button-submit {
+  float: left;
+  width: 20%;
+  padding: 10px;
+  background: #dbdfe1;
+  color: white;
+  font-size: 17px;
+  border: 1px solid grey;
+  border-left: none; /* Prevent double borders */
+  cursor: pointer;
+}
+
+.button-submit:hover {
+  background: #0b7dda;
+}
+
+/* Clear floats */
+.search-form::after {
+  content: '';
+  clear: both;
+  display: table;
 }
