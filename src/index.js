@@ -1,9 +1,9 @@
 import axios from 'axios';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import Notiflix from 'notiflix'; // Importuj Notiflix
+import Notiflix from 'notiflix';
 
-Notiflix.Notify.init({}); // Inicjalizuj Notiflix
+Notiflix.Notify.init({});
 
 const searchInput = document.querySelector('input[name="searchQuery"]');
 const searchButton = document.querySelector('.button-submit');
