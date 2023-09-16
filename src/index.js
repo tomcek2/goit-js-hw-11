@@ -1,15 +1,18 @@
 import axios from 'axios';
-import SimpleLightbox from 'simplelightbox'; // Zaimportuj bibliotekę SimpleLightbox
-import 'simplelightbox/dist/simple-lightbox.min.css'; // Zaimportuj styl CSS dla SimpleLightbox
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+import Notiflix from 'notiflix'; // Importuj Notiflix
+
+Notiflix.Notify.init({}); // Inicjalizuj Notiflix
 
 const searchInput = document.querySelector('input[name="searchQuery"]');
 const searchButton = document.querySelector('.button-submit');
 const gallery = document.querySelector('.gallery');
 
 let currentPage = 1;
-const perPage = 40; // Ilość zdjęć do pobrania na stronę
+const perPage = 40;
 let totalHits = 0;
-let lightbox; // Zmienna przechowująca instancję SimpleLightbox
+let lightbox;
 
 async function photoFetch(query, page) {
   try {
@@ -29,18 +32,15 @@ async function photoFetch(query, page) {
     totalHits = data.totalHits;
 
     if (data.hits.length === 0) {
-      alert(
+      Notiflix.Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
       );
     } else {
-      alert(`Hooray! We found ${totalHits} images.`);
+      Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
       displayImages(data.hits);
 
-      // Inicjalizuj SimpleLightbox po dodaniu nowych zdjęć do galerii
       if (!lightbox) {
-        lightbox = new SimpleLightbox('.gallery a', {
-          /* opcje konfiguracyjne */
-        });
+        lightbox = new SimpleLightbox('.gallery a', {});
       }
     }
   } catch (error) {
@@ -78,7 +78,7 @@ function displayImages(images) {
         createElement({
           type: 'a',
           attributes: {
-            href: image.largeImageURL, // Ustaw href na duży obrazek
+            href: image.largeImageURL,
           },
           content: [
             createElement({
@@ -106,6 +106,39 @@ function displayImages(images) {
                 }),
               ],
             }),
+            createElement({
+              type: 'p',
+              classList: ['info-item'],
+              text: image.views,
+              content: [
+                createElement({
+                  type: 'b',
+                  text: 'Views:',
+                }),
+              ],
+            }),
+            createElement({
+              type: 'p',
+              classList: ['info-item'],
+              text: image.comments,
+              content: [
+                createElement({
+                  type: 'b',
+                  text: 'Comments:',
+                }),
+              ],
+            }),
+            createElement({
+              type: 'p',
+              classList: ['info-item'],
+              text: image.downloads,
+              content: [
+                createElement({
+                  type: 'b',
+                  text: 'Downloads:',
+                }),
+              ],
+            }),
           ],
         }),
       ],
@@ -119,7 +152,7 @@ function infiniteScroll() {
   const scrollY = window.scrollY;
   const windowHeight = window.innerHeight;
   const bodyHeight = document.body.offsetHeight;
-  const offset = 200; // Próg od końca strony do wczytania nowych zdjęć
+  const offset = 200;
 
   if (
     scrollY + windowHeight >= bodyHeight - offset &&
@@ -128,23 +161,24 @@ function infiniteScroll() {
     currentPage++;
     photoFetch(searchInput.value, currentPage);
   } else if (gallery.children.length >= totalHits) {
-    infoText.textContent =
-      "We're sorry, but you've reached the end of search results.";
+    Notiflix.Notify.info(
+      "We're sorry, but you've reached the end of search results."
+    );
   }
 }
+
 function photoSearch(e) {
   e.preventDefault();
-  currentPage = 1; // Zresetuj stronę do pierwszej przy nowym wyszukiwaniu
-  gallery.innerHTML = ''; // Wyczyść galerię przed nowymi wynikami
+  currentPage = 1;
+  gallery.innerHTML = '';
   const query = searchInput.value;
   if (query) {
     photoFetch(query, currentPage);
   } else {
-    alert('Proszę wpisać frazę do wyszukiwania.');
+    Notiflix.Notify.warning('Please enter a search phrase.');
   }
 }
 
 searchButton.addEventListener('click', photoSearch);
 
-// Obsługa Infinite Scroll
 window.addEventListener('scroll', infiniteScroll);
