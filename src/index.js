@@ -39,7 +39,9 @@ async function photoFetch(query, page) {
       Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
       displayImages(data.hits);
 
-      if (!lightbox) {
+      if (lightbox) {
+        lightbox.refresh();
+      } else {
         lightbox = new SimpleLightbox('.gallery a', {});
       }
     }
